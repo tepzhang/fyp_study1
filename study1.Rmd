@@ -1,0 +1,48 @@
+---
+title: "fyp_study1"
+author: "Jinxiao Zhang"
+date: "April 5, 2019"
+output: html_document
+---
+
+```{r library}
+library(tidyverse)
+
+```
+
+```{r read data}
+# Eligibility: SUID, age, race, gender, gender_other, prsri_1-8, psqi_1-6, meq_19, erq
+df.eligibility <- read_csv("psych1_data/Fall 2018 Eligibility Survey.csv", col_names = T) %>% 
+  select(SUID, "Start Date", age, race, gender, gender_other, 
+         starts_with("prsri"), starts_with("psqi"), 
+         starts_with("meq"), starts_with("erq")) %>% 
+  filter(row_number() > 1) %>% 
+  # remove variable questions which is incorrectly in the data
+  group_by(SUID) %>% 
+  filter(row_number() == n()) # remove duplicates
+  #only include the last response from the same participant
+
+
+# Composite: SUID, age, race, gender, gender_other, pers, erqse
+df.composite <- read_csv("psych1_data/Fall18 Composite Survey.csv", col_names = T) %>% 
+  select(SUID, age, race, gender, gender_other, 
+         starts_with("pers"), starts_with("erqse")) %>% 
+  filter(row_number() > 1) # remove variable questions which is incorrectly in the data
+
+# combine the dataset
+df.questionnaire <- df.eligibility %>% 
+  left_join(df.composite %>% select(SUID, starts_with("pers"), starts_with("erqse")),
+            by = "SUID") %>% 
+  ungroup() %>% 
+  select(-SUID) %>% 
+  mutate(participant = sprintf("%04d", row_number())) %>% 
+  select(participant, everything())
+
+# write the data file to csv
+write_csv(df.questionnaire, "data/data_questionnaire.csv", na = "")
+
+```
+
+
+
+
