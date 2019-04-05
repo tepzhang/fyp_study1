@@ -41,8 +41,19 @@ df.questionnaire <- df.eligibility %>%
 # write the data file to csv
 write_csv(df.questionnaire, "data/data_questionnaire.csv", na = "")
 
+## variable names
+# prsri - PROMIS sleep-related impairment
+# psqi - Pittsburgh sleep quality index
+# erqf - emotion regulation frequency
+# pers - Perth Reactivity Scale 
+# erqse - emotion regulation self-efficacy
+
 ```
 
+## Jonas' code - add your code here and below
+```{r}
+
+```
 
 
 
