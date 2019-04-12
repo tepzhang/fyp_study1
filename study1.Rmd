@@ -53,6 +53,8 @@ write_csv(df.questionnaire, "data/data_questionnaire.csv", na = "")
 ## Jonas' code - add your code here and below
 ```{r}
 
+data <- read.csv("data/data_questionnaire.csv")
+
 ```
 
 
