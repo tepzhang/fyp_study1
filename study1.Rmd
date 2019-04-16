@@ -10,7 +10,7 @@ library(tidyverse)
 
 ```
 
-```{r read data}
+```{r prepare data}
 # Eligibility: SUID, age, race, gender, gender_other, prsri_1-8, psqi_1-6, meq_19, erq
 df.eligibility <- read_csv("psych1_data/Fall 2018 Eligibility Survey.csv", col_names = T) %>% 
   select(SUID, "Start Date", age, race, gender, gender_other, 
