@@ -51,11 +51,154 @@ write_csv(df.questionnaire, "data/data_questionnaire.csv", na = "")
 ```
 
 ## Jonas' code - add your code here and below
+## Copy of the original file (creating a working file [wf])
 ```{r}
 
-data <- read.csv("data/data_questionnaire.csv")
+raw_data <- read.csv("data/data_questionnaire.csv")
+
+wf <-raw_data
+
 
 ```
 
+## viewing data (getting a sense of the df)
+
+```{r}
+wf %>% 
+  head() %>% 
+  View()
+```
+
+## quesstionnaire PRSRI (PROMIS sleep-related impairment)
+
+```{r}
+## Changing Likert scale into numeric values
+
+##understanding the type of prsri rn
+
+str(wf$prsri_1:wf$prsri_8, 
+    digits.d = 1)
+
+class(wf$prsri_1:wf$prsri_8)
+levels(wf$prsri_1:wf$prsri_8)
+
+## Start mutating like a mad man
+## Not at all (1), A little bit (2), Somewhat (3), Quite a bit (4), Very much (5)
+
+wf1 <- wf
+wf1 <- wf1 %>% 
+  mutate(prsri_1 = case_when(
+    wf$prsri_1 == "Not at all"~ "1",
+    wf$prsri_1 == "Somewhat"~ "2",
+    wf$prsri_1 == "Quite a bit"~ "3",
+    wf$prsri_1 == "A little bit"~ "4",
+    wf$prsri_1 == "Very much"~ "5",
+    wf$prsri_1 == ""~ "-1",
+))
+as.numeric(wf1$prsri_1)
+str(wf1$prsri_1)
+
+wf1 <- wf1 %>% 
+  mutate(prsri_2 = case_when(
+    wf$prsri_2 == "Not at all"~ "1",
+    wf$prsri_2 == "Somewhat"~ "2",
+    wf$prsri_2 == "Quite a bit"~ "3",
+    wf$prsri_2 == "A little bit"~ "4",
+    wf$prsri_2 == "Very much"~ "5",
+    wf$prsri_2 == ""~ "-1",
+))
+
+as.numeric(wf1$prsri_2)
+str(wf1$prsri_1)
+wf1 <- wf1
+
+wf1 <- wf1 %>%  
+  mutate(prsri_3 = case_when(
+    wf$prsri_3 == "Not at all"~ "1",
+    wf$prsri_3 == "Somewhat"~ "2",
+    wf$prsri_3 == "Quite a bit"~ "3",
+    wf$prsri_3 == "A little bit"~ "4",
+    wf$prsri_3 == "Very much"~ "5",
+    wf$prsri_3 == ""~ "-1",
+))
+as.numeric(wf1$prsri_3)
+str(wf1$prsri_3)
+
+wf1 <- wf1 %>% 
+  mutate(prsri_4 = case_when(
+    wf$prsri_4 == "Not at all"~ "1",
+    wf$prsri_4 == "Somewhat"~ "2",
+    wf$prsri_4 == "Quite a bit"~ "3",
+    wf$prsri_4 == "A little bit"~ "4",
+    wf$prsri_4 == "Very much"~ "5",
+    wf$prsri_4 == ""~ "-1",
+))
+as.numeric(wf1$prsri_4)
+str(wf1$prsri_4)
+
+wf1 <- wf1 %>% 
+  mutate(prsri_5 = case_when(
+    wf$prsri_5 == "Not at all"~ "1",
+    wf$prsri_5 == "Somewhat"~ "2",
+    wf$prsri_5 == "Quite a bit"~ "3",
+    wf$prsri_5 == "A little bit"~ "4",
+    wf$prsri_5 == "Very much"~ "5",
+    wf$prsri_5 == ""~ "-1",
+))
+as.numeric(wf1$prsri_5)
+str(wf1$prsri_5)
+wf1 <- wf1
+
+wf1 <- wf1 %>% 
+  mutate(prsri_6 = case_when(
+    wf$prsri_6 == "Not at all"~ "1",
+    wf$prsri_6 == "Somewhat"~ "2",
+    wf$prsri_6 == "Quite a bit"~ "3",
+    wf$prsri_6 == "A little bit"~ "4",
+    wf$prsri_6 == "Very much"~ "5",
+    wf$prsri_6 == ""~ "-1",
+))
+as.numeric(wf1$prsri_6)
+str(wf1$prsri_6)
+wf1 <- wf1
+
+wf1 <- wf1 %>% 
+  mutate(prsri_7 = case_when(
+    wf$prsri_7 == "Not at all"~ "1",
+    wf$prsri_7 == "Somewhat"~ "2",
+    wf$prsri_7 == "Quite a bit"~ "3",
+    wf$prsri_7 == "A little bit"~ "4",
+    wf$prsri_7 == "Very much"~ "5",
+    wf$prsri_7 == ""~ "-1",
+))
+as.numeric(wf1$prsri_7)
+str(wf1$prsri_7)
+wf1 <- wf1
+
+wf1 <- wf1 %>% 
+  mutate(prsri_8 = case_when(
+    wf$prsri_8 == "Not at all"~ "1",
+    wf$prsri_8 == "Somewhat"~ "2",
+    wf$prsri_8 == "Quite a bit"~ "3",
+    wf$prsri_8 == "A little bit"~ "4",
+    wf$prsri_8 == "Very much"~ "5",
+    wf$prsri_8 == ""~ "-1",== ""~ "-1",
+))
+as.numeric(wf1$prsri_8)
+str(wf1$prsri_8)
+wf1 <- wf1
+
+### Finding out it works
+wf1 %>% 
+  select(prsri_1:prsri_8) %>% 
+  head()
+  
+
+
+
+
+
+
+```
 
 
