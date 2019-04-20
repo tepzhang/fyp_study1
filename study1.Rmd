@@ -52,6 +52,7 @@ write_csv(df.questionnaire, "data/data_questionnaire.csv", na = "")
 ```
 
 ## Jonas' code - add your code here and below
+## for cleaning up workspace (rm(list=ls()))
 ## Copy of the original file (creating a working file [wf])
 ```{r}
 
@@ -209,8 +210,44 @@ promis.df <- wf1 %>%
 ## quesstionnaire psqi - Pittsburgh sleep quality index
 
 ```{r}
-  wf1 %>% 
+wf2 <- wf1
+
+  wf2 %>% 
     select(starts_with("psqi"))
+## transforming time into miliary time for later calculation
+## evening_time (if am than 12 - x) - morning_time = TST
+
+
+wf2$psqi_1_hour <- as.numeric(wf2$psqi_1_hour)
+ 
+wf2$psqi_1_min <- as.numeric(wf2$psqi_1_min)
+
+wf2$psqi_3_hour <- as.numeric(wf2$psqi_3_hour)
+ 
+wf2$psqi_3_min <- as.numeric(wf2$psqi_3_min)
+wf2 <- wf2
+
+
+wf2 <- wf2 %>%
+  mutate(psqi_1_hour_MT = psqi_1_hour + 12)
+
+wf2$psqi_1_hour_MT[wf2$psqi_1_ampm == 'AM'] = wf2$psqi_1_hour_MT[wf2$psqi_1_ampm == 'AM'] - 12
+
+##changing the 12am people to 0, because thats how military time works. It starts at 0 not 12.
+
+wf2$psqi_1_hour_MT[wf2$psqi_1_hour== 12] = 0
+
+wf2 <- wf2
+
+wf2 %>% 
+    select(starts_with("psqi"))
+
+## transforming it into min since last midnight in order to avoid min/h calculation problems while substracting
+## adding the min from another variable
+
+wf2$psqi_1_hour_MT_min = (wf2$psqi_1_hour_MT *60) + wf2$psqi_1_min
+
+
 
 ```
 
