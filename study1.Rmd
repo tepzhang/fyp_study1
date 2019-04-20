@@ -325,10 +325,42 @@ wf2 <- wf2 %>%
     wf2$psqi_latency_ab > 4 ~ "3"
   ))
 
+wf2$psqi_latency_c2 <- as.numeric(wf2$psqi_latency_c2)
+
 ####Component 3: Sleep duration-question 4
+
+wf2 <- wf2 %>% 
+  mutate(psqi_duration_c3 = case_when(
+    wf2$psqi_4 > 7 ~ "0",
+    wf2$psqi_4 < 8 & wf2$psqi_4 > 5 ~ "1",
+    wf2$psqi_4 < 7 & wf2$psqi_4 > 4 ~ "2",
+    wf2$psqi_4 < 5 ~ "3",
+    wf2$psqi_4 == "" ~ "-1",
+  ))
+
+wf2$psqi_duration_c3 <- as.numeric(wf2$psqi_duration_c3)
     
+
+
+####Component 4: Sleep efficiency-questions 1, 3, and 4
+
+## variable for % 
+wf2$psqi_sf <- (wf2$psqi_4 / wf2$psqi_time_in_bed_h) * 100
+
+wf2 <- wf2 %>% 
+  mutate(psqi_sf_c4 = case_when(
+    wf2$psqi_sf > 85 ~ 0,
+    wf2$psqi_sf > 74 & wf2$psqi_sf < 85 ~ 1,
+    wf2$psqi_sf > 64 & wf2$psqi_latency_ab < 75 ~ 2,
+    wf2$psqi_sf < 65 ~ 3
+  ))
+
+####Overall_Score
+
+wf2$psqi_total <- wf2$psqi_sq_c1 + wf2$psqi_latency_c2 + wf2$psqi_duration_c3 + wf2$psqi_sf_c4
+
 wf2 %>% 
     select(starts_with("psqi"))
-
 ```
 
+## lets check if people who are more accurate in guessing there total sleep time are different in terms of rest variables
