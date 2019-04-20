@@ -239,15 +239,96 @@ wf2$psqi_1_hour_MT[wf2$psqi_1_hour== 12] = 0
 
 wf2 <- wf2
 
-wf2 %>% 
-    select(starts_with("psqi"))
-
 ## transforming it into min since last midnight in order to avoid min/h calculation problems while substracting
 ## adding the min from another variable
 
 wf2$psqi_1_hour_MT_min = (wf2$psqi_1_hour_MT *60) + wf2$psqi_1_min
 
 
+## to calculate the time slept until midnight (for example if someone felt asleep at 22:00, he slept 2h until mitnight and then I just add the minutes to the wake up), it will also be in minutes thats why 24 * 60 = 1440 ...lol
+
+wf2$psqi_timetillmidnight [wf2$psqi_1_ampm == 'PM'] <-  (24*60) - wf2$psqi_1_hour_MT_min [wf2$psqi_1_ampm == 'PM']
+
+##Sleep from midnight to morning RELEVANT FOR AM AND PM!!!
+
+wf2$psqi_timetillwakeup <- (wf2$psqi_3_hour * 60) + wf2$psqi_3_min
+
+##Time spend in bed (PM) = time till midnight + time until wakey wakey 
+
+wf2$psqi_time_in_bed_pm <-  wf2$psqi_timetillmidnight + wf2$psqi_timetillwakeup 
+
+## AM sleepers will be calculated by the difference between time until midnight when they fell asleep to their wake up
+
+wf2$psqi_timeaftermidnight [wf2$psqi_1_ampm == 'AM'] <- wf2$psqi_1_hour_MT
+
+## time in bed wakeup time - time of falling asleep after midnight
+
+wf2$psqi_time_in_bed_am <- wf2$psqi_timetillwakeup - wf2$psqi_timeaftermidnight
+
+## bringing am and pm together
+
+wf2 <- wf2 %>%
+  mutate(psqi_time_in_bed_min = case_when(
+   wf2$psqi_1_ampm == 'AM'~ wf2$psqi_time_in_bed_am,
+   wf2$psqi_1_ampm == 'PM'~ wf2$psqi_time_in_bed_pm
+  ))
+
+wf2$psqi_time_in_bed_h <- wf2$psqi_time_in_bed_min / 60
+
+### COMPONENTS ########################
+#####################
+
+###Component 1: Subjective sleep quality-question 9 (for us psqi_6)
+
+wf2 <- wf2 %>% 
+  mutate(psqi_sq_c1 = case_when(
+    wf2$psqi_6 == "Very good"~ "0",
+    wf2$psqi_6 == "Fairly good"~ "1",
+    wf2$psqi_6 == "Fairly bad"~ "2",
+    wf2$psqi_6 == "Very bad"~ "3",
+    wf2$psqi_6 == "" ~ "-1",
+  ))
+
+wf2$psqi_sq_c1 <- as.numeric(wf2$psqi_sq_c1)
+
+###Component 2: Sleep latency-questions 2 and 5a
+
+wf2 <- wf2 %>% 
+  mutate(psqi_latency_a = case_when(
+    wf2$psqi_2 < 16 ~ "0",
+    wf2$psqi_2 > 15 & wf2$psqi_2 < 31 ~ "1",
+    wf2$psqi_2 > 30 & wf2$psqi_2 < 61 ~ "2",
+    wf2$psqi_2 > 60 ~ "3",
+    wf2$psqi_2 == "" ~ "-1",
+  ))
+
+wf2$psqi_latency_a <- as.numeric(wf2$psqi_latency_a)
+
+wf2 <- wf2 %>% 
+  mutate(psqi_latency_b = case_when(
+    wf2$psqi_5a == "Less than once a week" ~ "1",
+    wf2$psqi_5a == "Not during the past month" ~ "0",
+    wf2$psqi_5a == "Once or twice a week" ~ "2",
+    wf2$psqi_5a == "Three or more times a week" ~ "3",
+    wf2$psqi_5a == "" ~ "-1",
+  ))
+
+wf2$psqi_latency_b <- as.numeric(wf2$psqi_latency_b)
+
+wf2$psqi_latency_ab <- wf2$psqi_latency_b + wf2$psqi_latency_a
+
+wf2 <- wf2 %>% 
+  mutate(psqi_latency_c2 = case_when(
+    wf2$psqi_latency_ab == 0 ~ "0",
+    wf2$psqi_latency_ab > 0 & wf2$psqi_latency_ab < 3 ~ "1",
+    wf2$psqi_latency_ab > 2 & wf2$psqi_latency_ab < 5 ~ "2",
+    wf2$psqi_latency_ab > 4 ~ "3"
+  ))
+
+####Component 3: Sleep duration-question 4
+    
+wf2 %>% 
+    select(starts_with("psqi"))
 
 ```
 
