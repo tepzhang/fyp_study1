@@ -361,6 +361,421 @@ wf2$psqi_total <- wf2$psqi_sq_c1 + wf2$psqi_latency_c2 + wf2$psqi_duration_c3 + 
 
 wf2 %>% 
     select(starts_with("psqi"))
+
+#### Visuals psqi
+
+ggplot(wf2, aes(x = wf2$psqi_total)) + 
+            geom_histogram( binwidth=1, color="black", fill="white")
+
+##Cronbachsalpha Components
+tempV <- wf2 %>% 
+  select(psqi_sq_c1, psqi_latency_c2, psqi_duration_c3, psqi_sf_c4) 
+  
+reliability_psqi <-  psych::alpha(tempV)
+reliability_psqi
+                                   
+
 ```
+
+### morningness eveningness questionnaire (meq)
+
+```{r}
+levels(wf2$meq_19)
+
+wf2 <- wf2 %>% 
+  mutate(meq_19 = case_when(
+    wf2$meq_19 == "Definitely a morning type" ~ "1",
+    wf2$meq_19 == "Rather more a morning type than an evening type" ~ "2",
+    wf2$meq_19 == "Rather more an evening type than a morning type"  ~ "3",
+    wf2$meq_19 == "Definitely an evening type" ~ "4",
+    wf2$meq_19 == "" ~ "-1"
+  ))
+
+#### Visuals MEQ
+
+ggplot(wf2, aes(x = wf$meq_19)) + 
+            geom_bar( color="black", fill="white")
+```
+
+###: emotion regulation questionnaire frequency (erqf)
+
+```{r}
+wf3 <- wf2
+
+#wf3[is.na(wf3)] <- -1
+
+###ER Frequency Reappraisal
+
+wf3$erqf_total_rap = (wf3$erqf_1 + wf3$erqf_3 + wf3$erqf_5 + wf3$erqf_7 + wf3$erqf_8 + wf3$erqf_10)/6 
+
+###ER Frequency Suppression
+wf3$erqf_total_sup = (wf3$erqf_2 + wf3$erqf_4 + wf3$erqf_5 + wf3$erqf_6 + wf3$erqf_9)/4
+
+wf3 %>% 
+    select(participant, starts_with("erqf")) 
+
+cor.test(wf3$erqf_total_rap, wf3$erqf_total_sup)
+
+```
+###emotion regulation questionnaire distraction frequency (erqdf)
+
+```{r}
+
+
+#wf3[is.na(wf3)] <- -1
+
+###ER Frequency Distraction
+
+wf3$erqdf_total_dis = (wf3$erqdf_1 + wf3$erqdf_2 + wf3$erqdf_3 + wf3$erqdf_4)/4 
+
+wf3 %>% 
+    select(participant, starts_with("erqdf")) 
+
+cor.test(wf3$erqdf_total_dis, wf3$erqf_total_sup)
+cor.test(wf3$erqdf_total_dis, wf3$erqf_total_rap)
+cor.test(wf3$erqf_total_rap, wf3$erqf_total_sup)
+```
+### Perth Reactivity Scale (PRS)
+
+```{r}
+
+levels(wf3$pers_1)
+
+wf3 <- wf3 %>% 
+  mutate(pers_1 = case_when(
+    wf2$pers_1 == "Very unlike me" ~ 1,
+    wf2$pers_1 == "Somewhat unlike me" ~ 2,
+    wf2$pers_1 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_1 == "Somewhat like me" ~ 4,
+    wf2$pers_1 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_2 = case_when(
+    wf2$pers_2 == "Very unlike me" ~ 1,
+    wf2$pers_2 == "Somewhat unlike me" ~ 2,
+    wf2$pers_2 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_2 == "Somewhat like me" ~ 4,
+    wf2$pers_2 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_3 = case_when(
+    wf2$pers_3 == "Very unlike me" ~ 1,
+    wf2$pers_3 == "Somewhat unlike me" ~ 2,
+    wf2$pers_3 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_3 == "Somewhat like me" ~ 4,
+    wf2$pers_3 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_4 = case_when(
+    wf2$pers_4 == "Very unlike me" ~ 1,
+    wf2$pers_4 == "Somewhat unlike me" ~ 2,
+    wf2$pers_4 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_4 == "Somewhat like me" ~ 4,
+    wf2$pers_4 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_5 = case_when(
+    wf2$pers_5 == "Very unlike me" ~ 1,
+    wf2$pers_5 == "Somewhat unlike me" ~ 2,
+    wf2$pers_5 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_5 == "Somewhat like me" ~ 4,
+    wf2$pers_5 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_6 = case_when(
+    wf2$pers_6 == "Very unlike me" ~ 1,
+    wf2$pers_6 == "Somewhat unlike me" ~ 2,
+    wf2$pers_6 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_6 == "Somewhat like me" ~ 4,
+    wf2$pers_6 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_7 = case_when(
+    wf2$pers_7 == "Very unlike me" ~ 1,
+    wf2$pers_7 == "Somewhat unlike me" ~ 2,
+    wf2$pers_7 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_7 == "Somewhat like me" ~ 4,
+    wf2$pers_7 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_8 = case_when(
+    wf2$pers_8 == "Very unlike me" ~ 1,
+    wf2$pers_8 == "Somewhat unlike me" ~ 2,
+    wf2$pers_8 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_8 == "Somewhat like me" ~ 4,
+    wf2$pers_8 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_9 = case_when(
+    wf2$pers_9 == "Very unlike me" ~ 1,
+    wf2$pers_9 == "Somewhat unlike me" ~ 2,
+    wf2$pers_9 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_9 == "Somewhat like me" ~ 4,
+    wf2$pers_9 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_10 = case_when(
+    wf2$pers_10 == "Very unlike me" ~ 1,
+    wf2$pers_10 == "Somewhat unlike me" ~ 2,
+    wf2$pers_10 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_10 == "Somewhat like me" ~ 4,
+    wf2$pers_10 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_11 = case_when(
+    wf2$pers_11 == "Very unlike me" ~ 1,
+    wf2$pers_11 == "Somewhat unlike me" ~ 2,
+    wf2$pers_11 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_11 == "Somewhat like me" ~ 4,
+    wf2$pers_11 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_12 = case_when(
+    wf2$pers_12 == "Very unlike me" ~ 1,
+    wf2$pers_12 == "Somewhat unlike me" ~ 2,
+    wf2$pers_12 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_12 == "Somewhat like me" ~ 4,
+    wf2$pers_12 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_13 = case_when(
+    wf2$pers_13 == "Very unlike me" ~ 1,
+    wf2$pers_13 == "Somewhat unlike me" ~ 2,
+    wf2$pers_13 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_13 == "Somewhat like me" ~ 4,
+    wf2$pers_13 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_14 = case_when(
+    wf2$pers_14 == "Very unlike me" ~ 1,
+    wf2$pers_14 == "Somewhat unlike me" ~ 2,
+    wf2$pers_14 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_14 == "Somewhat like me" ~ 4,
+    wf2$pers_14 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_15 = case_when(
+    wf2$pers_15 == "Very unlike me" ~ 1,
+    wf2$pers_15 == "Somewhat unlike me" ~ 2,
+    wf2$pers_15 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_15 == "Somewhat like me" ~ 4,
+    wf2$pers_15 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_16 = case_when(
+    wf2$pers_16 == "Very unlike me" ~ 1,
+    wf2$pers_16 == "Somewhat unlike me" ~ 2,
+    wf2$pers_16 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_16 == "Somewhat like me" ~ 4,
+    wf2$pers_16 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_17 = case_when(
+    wf2$pers_17 == "Very unlike me" ~ 1,
+    wf2$pers_17 == "Somewhat unlike me" ~ 2,
+    wf2$pers_17 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_17 == "Somewhat like me" ~ 4,
+    wf2$pers_17 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_18 = case_when(
+    wf2$pers_18 == "Very unlike me" ~ 1,
+    wf2$pers_18 == "Somewhat unlike me" ~ 2,
+    wf2$pers_18 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_18 == "Somewhat like me" ~ 4,
+    wf2$pers_18 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_19 = case_when(
+    wf2$pers_19 == "Very unlike me" ~ 1,
+    wf2$pers_19 == "Somewhat unlike me" ~ 2,
+    wf2$pers_19 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_19 == "Somewhat like me" ~ 4,
+    wf2$pers_19 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_20 = case_when(
+    wf2$pers_20 == "Very unlike me" ~ 1,
+    wf2$pers_20 == "Somewhat unlike me" ~ 2,
+    wf2$pers_20 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_20 == "Somewhat like me" ~ 4,
+    wf2$pers_20 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_21 = case_when(
+    wf2$pers_21 == "Very unlike me" ~ 1,
+    wf2$pers_21 == "Somewhat unlike me" ~ 2,
+    wf2$pers_21 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_21 == "Somewhat like me" ~ 4,
+    wf2$pers_21 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_22 = case_when(
+    wf2$pers_22 == "Very unlike me" ~ 1,
+    wf2$pers_22 == "Somewhat unlike me" ~ 2,
+    wf2$pers_22 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_22 == "Somewhat like me" ~ 4,
+    wf2$pers_22 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_23 = case_when(
+    wf2$pers_23 == "Very unlike me" ~ 1,
+    wf2$pers_23 == "Somewhat unlike me" ~ 2,
+    wf2$pers_23 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_23 == "Somewhat like me" ~ 4,
+    wf2$pers_23 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_24 = case_when(
+    wf2$pers_24 == "Very unlike me" ~ 1,
+    wf2$pers_24 == "Somewhat unlike me" ~ 2,
+    wf2$pers_24 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_24 == "Somewhat like me" ~ 4,
+    wf2$pers_24 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_25 = case_when(
+    wf2$pers_25 == "Very unlike me" ~ 1,
+    wf2$pers_25 == "Somewhat unlike me" ~ 2,
+    wf2$pers_25 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_25 == "Somewhat like me" ~ 4,
+    wf2$pers_25 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_26 = case_when(
+    wf2$pers_26 == "Very unlike me" ~ 1,
+    wf2$pers_26 == "Somewhat unlike me" ~ 2,
+    wf2$pers_26 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_26 == "Somewhat like me" ~ 4,
+    wf2$pers_26 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_27 = case_when(
+    wf2$pers_27 == "Very unlike me" ~ 1,
+    wf2$pers_27 == "Somewhat unlike me" ~ 2,
+    wf2$pers_27 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_27 == "Somewhat like me" ~ 4,
+    wf2$pers_27 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_28 = case_when(
+    wf2$pers_28 == "Very unlike me" ~ 1,
+    wf2$pers_28 == "Somewhat unlike me" ~ 2,
+    wf2$pers_28 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_28 == "Somewhat like me" ~ 4,
+    wf2$pers_28 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_29 = case_when(
+    wf2$pers_29 == "Very unlike me" ~ 1,
+    wf2$pers_29 == "Somewhat unlike me" ~ 2,
+    wf2$pers_29 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_29 == "Somewhat like me" ~ 4,
+    wf2$pers_29 == "Very like me" ~ 5,
+  ))
+
+wf3 <- wf3 %>% 
+  mutate(pers_30 = case_when(
+    wf2$pers_30 == "Very unlike me" ~ 1,
+    wf2$pers_30 == "Somewhat unlike me" ~ 2,
+    wf2$pers_30 == "Neither like or unlike me"  ~ 3,
+    wf2$pers_30 == "Somewhat like me" ~ 4,
+    wf2$pers_30 == "Very like me" ~ 5,
+  ))
+
+#### General positive reactivity scale ####
+
+## Positive-activation
+wf3$pers_pos_act <- wf3$pers_1 + wf3$pers_7 + wf3$pers_13 + wf3$pers_19 + wf3$pers_25
+
+## Positive-intensity
+wf3$pers_pos_int <- wf3$pers_5 + wf3$pers_11 + wf3$pers_17 + wf3$pers_23 + wf3$pers_29
+
+## Positive-duration
+wf3$pers_pos_dur <- wf3$pers_3 + wf3$pers_9 + wf3$pers_15 + wf3$pers_27 + wf3$pers_21
+
+##Positive Total
+
+wf3$pers_pos_total <- pers_pos_act + pers_pos_int + pers_pos_dur
+
+### General negative reactivity scale ###
+
+### Negative-activation
+wf3$pers_neg_act <- wf3$pers_2 + wf3$pers_8 + wf3$pers_14 + wf3$pers_20 + wf3$pers_26
+
+### Negative-intensity
+wf3$pers_neg_int <- wf3$pers_6 + wf3$pers_12 + wf3$pers_18 + wf3$pers_24 + wf3$pers_30
+
+## Negative-duration
+wf3$pers_neg_dur <- wf3$pers_4 + wf3$pers_10 + wf3$pers_16 + wf3$pers_22 + wf3$pers_28
+
+## Negative Total
+
+wf3$pers_neg_total <- pers_neg_act + pers_neg_int + pers_neg_dur
+
+wf3%>% 
+    select(participant, starts_with("pers")) 
+```
+
+### Emotion regulation questionnaire capacity
+
+```{r}
+###ER Capacity Reappraisal
+
+wf3$erqse_total_rap = (wf3$erqse_1 + wf3$erqse_3 + wf3$erqse_5 + wf3$erqse_7 + wf3$erqse_8 + wf3$erqse_10)/6 
+
+###ER Capacity Suppression
+wf3$erqse_total_sup = (wf3$erqse_2 + wf3$erqse_4 + wf3$erqse_5 + wf3$erqse_6 + wf3$erqse_9)/4
+
+wf3 %>% 
+    select(participant, starts_with("erqse")) 
+
+cor.test(wf3$erqse_total_rap, wf3$erqse_total_sup)
+
+
+```
+###emotion regulation questionnaire distraction Capacity (erqse)
+
+```{r}
+###ER Frequency Distraction
+
+wf3$erqse_total_dis = (wf3$erqse_1 + wf3$erqse_2 + wf3$erqse_3 + wf3$erqse_4)/4 
+
+wf3 %>% 
+    select(participant, starts_with("erqse")) 
+
+cor.test(wf3$erqse_total_dis, wf3$erqse_total_sup)
+cor.test(wf3$erqse_total_dis, wf3$erqse_total_rap)
+cor.test(wf3$erqse_total_rap, wf3$erqse_total_sup)
+```
+
 
 ## lets check if people who are more accurate in guessing there total sleep time are different in terms of rest variables
