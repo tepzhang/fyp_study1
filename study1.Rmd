@@ -1,9 +1,12 @@
 ---
 title: "fyp_study1"
-author: "Jinxiao Zhang"
+author: "Jinxiao Zhang" "Jonas Schoene"
 date: "April 5, 2019"
 output: html_document
 ---
+
+#### Preprocessing of the raw data
+##### finished file name is "data_questionnaire.csv"
 
 ```{r library}
 library(tidyverse)
@@ -232,10 +235,6 @@ wf2 <- wf2 %>%
   mutate(psqi_1_hour_MT = psqi_1_hour + 12)
 
 wf2$psqi_1_hour_MT[wf2$psqi_1_ampm == 'AM'] = wf2$psqi_1_hour_MT[wf2$psqi_1_ampm == 'AM'] - 12
-
-##changing the 12am people to 0, because thats how military time works. It starts at 0 not 12.
-
-wf2$psqi_1_hour_MT[wf2$psqi_1_hour== 12] = 0
 
 wf2 <- wf2
 
@@ -724,7 +723,7 @@ wf3$pers_pos_dur <- wf3$pers_3 + wf3$pers_9 + wf3$pers_15 + wf3$pers_27 + wf3$pe
 
 ##Positive Total
 
-wf3$pers_pos_total <- pers_pos_act + pers_pos_int + pers_pos_dur
+wf3$pers_pos_total <- wf3$pers_pos_act + wf3$pers_pos_int + wf3$pers_pos_dur
 
 ### General negative reactivity scale ###
 
@@ -739,7 +738,7 @@ wf3$pers_neg_dur <- wf3$pers_4 + wf3$pers_10 + wf3$pers_16 + wf3$pers_22 + wf3$p
 
 ## Negative Total
 
-wf3$pers_neg_total <- pers_neg_act + pers_neg_int + pers_neg_dur
+wf3$pers_neg_total <- wf3$pers_neg_act + wf3$pers_neg_int + wf3$pers_neg_dur
 
 wf3%>% 
     select(participant, starts_with("pers")) 
@@ -775,6 +774,11 @@ wf3 %>%
 cor.test(wf3$erqse_total_dis, wf3$erqse_total_sup)
 cor.test(wf3$erqse_total_dis, wf3$erqse_total_rap)
 cor.test(wf3$erqse_total_rap, wf3$erqse_total_sup)
+```
+
+#### Print out the preprocessed file
+```{r}
+write.csv(wf3, "data/data_questionnaire_1.csv")
 ```
 
 
