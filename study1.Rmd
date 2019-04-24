@@ -713,32 +713,32 @@ wf3 <- wf3 %>%
 #### General positive reactivity scale ####
 
 ## Positive-activation
-wf3$pers_pos_act <- wf3$pers_1 + wf3$pers_7 + wf3$pers_13 + wf3$pers_19 + wf3$pers_25
+wf3$pers_pos_act <- (wf3$pers_1 + wf3$pers_7 + wf3$pers_13 + wf3$pers_19 + wf3$pers_25)/5
 
 ## Positive-intensity
-wf3$pers_pos_int <- wf3$pers_5 + wf3$pers_11 + wf3$pers_17 + wf3$pers_23 + wf3$pers_29
+wf3$pers_pos_int <- (wf3$pers_5 + wf3$pers_11 + wf3$pers_17 + wf3$pers_23 + wf3$pers_29)/5
 
 ## Positive-duration
-wf3$pers_pos_dur <- wf3$pers_3 + wf3$pers_9 + wf3$pers_15 + wf3$pers_27 + wf3$pers_21
+wf3$pers_pos_dur <- (wf3$pers_3 + wf3$pers_9 + wf3$pers_15 + wf3$pers_27 + wf3$pers_21)/5
 
 ##Positive Total
 
-wf3$pers_pos_total <- wf3$pers_pos_act + wf3$pers_pos_int + wf3$pers_pos_dur
+wf3$pers_pos_total <- (wf3$pers_pos_act + wf3$pers_pos_int + wf3$pers_pos_dur)/3
 
 ### General negative reactivity scale ###
 
 ### Negative-activation
-wf3$pers_neg_act <- wf3$pers_2 + wf3$pers_8 + wf3$pers_14 + wf3$pers_20 + wf3$pers_26
+wf3$pers_neg_act <- (wf3$pers_2 + wf3$pers_8 + wf3$pers_14 + wf3$pers_20 + wf3$pers_26)/5
 
 ### Negative-intensity
-wf3$pers_neg_int <- wf3$pers_6 + wf3$pers_12 + wf3$pers_18 + wf3$pers_24 + wf3$pers_30
+wf3$pers_neg_int <- (wf3$pers_6 + wf3$pers_12 + wf3$pers_18 + wf3$pers_24 + wf3$pers_30)/5
 
 ## Negative-duration
-wf3$pers_neg_dur <- wf3$pers_4 + wf3$pers_10 + wf3$pers_16 + wf3$pers_22 + wf3$pers_28
+wf3$pers_neg_dur <- (wf3$pers_4 + wf3$pers_10 + wf3$pers_16 + wf3$pers_22 + wf3$pers_28)/5
 
 ## Negative Total
 
-wf3$pers_neg_total <- wf3$pers_neg_act + wf3$pers_neg_int + wf3$pers_neg_dur
+wf3$pers_neg_total <- (wf3$pers_neg_act + wf3$pers_neg_int + wf3$pers_neg_dur)/3
 
 wf3%>% 
     select(participant, starts_with("pers")) 
