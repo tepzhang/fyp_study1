@@ -1,0 +1,213 @@
+---
+title: "fyp_study1_stats"
+author: "Jonas Schöne"
+date: "22 April 2019"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(psych)
+```
+
+### reading the file
+
+```{r}
+df <- read.csv( file= "data/data_questionnaire_1.csv")
+
+#D:/DownloadsDesktop/Desktop/Stanford/Bachelr-Thesis/fyp_study1/
+```
+
+### Demografics
+
+```{r}
+#Distribuition of age and gender
+
+meanAge <- mean(df$age)
+
+meanAgeGender <- describeBy (df$age,group = df$gender)
+
+
+```
+
+
+### Item Analysis PRSRI (PROMIS sleep-related impairment)
+
+```{r}
+promis.df <- df %>% 
+  select(prsri_1:prsri_8)
+
+alpha(promis.df)
+
+cor.test(df$prsri_all, df$age)
+
+DistrPromisGender <- describeBy (df$prsri_all,group = df$gender)
+```
+
+###psqi - Pittsburgh sleep quality index
+
+```{r}
+psqi.df <- df %>% 
+  select(psqi_sq_c1,psqi_latency_c2,psqi_duration_c3,psqi_sf_c4)
+
+### Componenten Consistency
+alpha(psqi.df)
+
+x <- na.omit(df$psqi_time_in_bed_h)
+hist(x,prob=TRUE,main="Normal density + histogram")
+  lines(density(x),lty="dotted",col="red")
+  
+SleepQualityDes <- describe(df$psqi_sq_c1)
+SleepLatencyDes <- describe(df$psqi_latency_c2)
+SleepDurationDes <- describe(df$psqi_duration_c3)
+SleepEffeciencyDes <- describe(df$psqi_sf_c4)
+PSQItotalDes <- describe(df$psqi_total)
+DistrPSQIGender <- describeBy (df$psqi_total,group = df$gender)
+
+```
+
+### morningness eveningness questionnaire (meq)
+
+```{r}
+MorEvenDes <- describe(df$meq_19)
+```
+###: emotion regulation questionnaire frequency (erqf) + DISTRACTION #### FREQUENCY
+
+```{r}
+erqf.df <- df %>% 
+  select(erqf_total_rap,erqf_total_sup, erqdf_total_dis)
+
+DistrFreqRapGender <- describeBy (df$erqf_total_rap,group = df$gender)
+DistrFreqSupGender <- describeBy (df$erqf_total_sup,group = df$gender)
+DistrFreqDisGender <- describeBy (df$erqdf_total_dis,group = df$gender)
+
+### Componenten Consistency
+alpha(erqf.df)
+```
+###### Emotion regulation questionnaire capacity### EFFICACY
+
+```{r}
+erqse.df <- df %>% 
+  select(erqse_total_rap,erqse_total_sup, erqse_total_dis)
+
+DistrEffRapGender <- describeBy (df$erqse_total_rap,group = df$gender)
+DistrEffSupGender <- describeBy (df$erqse_total_sup,group = df$gender)
+DistrEffDisGender <- describeBy (df$erqdf_total_dis,group = df$gender)
+
+### Componenten Consistency
+alpha(erqse.df)
+```
+Interestingly, Efficacy is highly intercorrelated, whereas frequency is not
+
+### Perth Reactivity Scale (PRS) ### REACTIVITY
+
+```{r}
+PERS.df <- df %>% 
+  select(participant, starts_with("pers_pos"), starts_with("pers_neg"))
+
+DistrPersPosGender <- describeBy (df$pers_pos_total,group = df$gender)
+DistrPersNegGender <- describeBy (df$pers_neg_total,group = df$gender)
+
+```
+### Hypothesis Testing
+
+(1)Zero-order correlations will be obtained among measures of sleep quality, sleep-related impairment, emotional reactivity
+
+```{r}
+
+## Sleep Quality (PSQI) and Reacticity (PERS) 
+hyp1_1 <- df %>% 
+  select(psqi_sq_c1, psqi_latency_c2, psqi_duration_c3, psqi_sf_c4, starts_with("pers_pos"), starts_with("pers_neg"), )
+
+corr.test (hyp1_1)
+cor.test (df$psqi_total, df$pers_neg_total)
+cor.test (df$psqi_total, df$pers_pos_total)
+
+## Impairment (PROMIS) and Reactivity(PERS)
+hyp1_2 <- df %>%
+  select(starts_with("pers_pos"), starts_with("pers_neg"), prsri_all)
+
+corr.test (hyp1_2)
+cor.test (df$prsri_all, df$pers_neg_total)
+cor.test (df$prsri_all, df$pers_pos_total)
+```
+Seems like that Trait Sleep Quality can predict negative intensity and activation in bivariate correlations, but not positive.
+Same seems to be the case for impairment. It is only related to the negative aspects.
+Since negative items share tons of variance setp-wise regression needs to be done in order to say, which one is the major contributor.
+
+(2)	Zero-order correlations will be obtained among measures of sleep quality, sleep-related impairment, emotion regulation frequency and self-efficacy
+
+```{r}
+## Sleep Quality (PSQI) and ERF
+hyp2_1 <- df %>% 
+  select(psqi_total, erqf_total_rap,erqf_total_sup, erqdf_total_dis)
+
+corr.test (hyp2_1)
+
+### Sleep Quality (PSQI) and ER-Selfefficacy
+
+hyp2_2 <- df %>% 
+  select(psqi_total, erqse_total_rap,erqse_total_sup, erqse_total_dis)
+
+corr.test (hyp2_2)
+
+### Sleep-Impairment (PROMIS) and ERF 
+
+hyp2_3 <- df %>% 
+  select(prsri_all, erqf_total_rap,erqf_total_sup, erqdf_total_dis)
+
+corr.test (hyp2_3)
+
+### Sleep-Impairment (PROMIS) and ER-Selfefficacy 
+
+hyp2_4 <- df %>% 
+  select(prsri_all, erqse_total_rap,erqse_total_sup, erqse_total_dis)
+
+corr.test (hyp2_4)
+```
+There is not much to find for emotion regulation and Sleep Quality.
+PSQI with Reappraisal but I dont know why? Probably, nothing that I would talk to much about
+
+### Habitual Sleeptime and efficacy and Emotion Regulation
+### Habitual sleep an ER reactivity
+
+```{r}
+## Sleep Duration and ERF
+hyp3_1 <- df %>% 
+  select(psqi_duration_c3, erqf_total_rap,erqf_total_sup, erqdf_total_dis)
+
+corr.test (hyp3_1)
+
+### Sleep Duration and ER-Selfefficacy
+
+hyp3_2 <- df %>% 
+  select(psqi_duration_c3, erqse_total_rap,erqse_total_sup, erqse_total_dis)
+
+corr.test (hyp3_2)
+
+### Sleep-Efficacy and ERF 
+
+hyp3_3 <- df %>% 
+  select(psqi_sf, erqf_total_rap,erqf_total_sup, erqdf_total_dis)
+
+corr.test (hyp3_3)
+
+### Sleep-Efficacy and ER-Selfefficacy 
+
+hyp3_4 <- df %>% 
+  select(psqi_sf, erqse_total_rap,erqse_total_sup, erqse_total_dis)
+
+corr.test (hyp3_4)
+```
+################# THIS IS COOL SLEEP EFFICACY HAS TO DO WITH ER SUCCESS
+
+```{r}
+## Sleep Quality (PSQI) and Reacticity (PERS) 
+
+cor.test (df$psqi_sf, df$pers_neg_total)
+cor.test (df$psqi_sf, df$pers_pos_total)
+
+cor.test(df$psqi_3_hour, df$pers_neg_total)
+cor.test(df$psqi_3_hour, df$pers_pos_total)
+```
+
