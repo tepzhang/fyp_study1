@@ -24,9 +24,11 @@ df <- read.csv("data/data_questionnaire_complete.csv")
 
 ### Filter 1 Case with a irregular bedtime, which is probably a missclick. Highly unlikely that a student goes to bed at 2PM.
 
+### !!! The two excluded cases are most likely misclicks, because they also told that they sleep 6h. WHich only workes if you switch AM/PM
+
 ```{r}
 df <- df %>% 
- filter(participant != 261)
+ filter(psqi_time_in_bed_h < 13)
 ```
 
 ### Demografics 
@@ -35,16 +37,35 @@ df <- df %>%
 ### Age Distribution
 
 ggplot(data = df,
-       mapping = aes(x = age)) 
+       mapping = aes(x = age)) +
   geom_bar() 
 
 describe(df$age)
+sd(df$age, na.rm = FALSE)
+
 describe.by(df$age, df$gender)
 
 ### Race 
 
 table(df$race)
 
+### Duration Calculated and Self-Reported
+
+Calculated_Duration <- na.omit(df$psqi_time_in_bed_h)
+hist(Calculated_Duration,prob=TRUE,main="Normal density + histogram")
+  lines(density(Calculated_Duration),lty="dotted",col="red")
+  
+sd(df$psqi_time_in_bed_h, na.rm = FALSE)
+mean(df$psqi_time_in_bed_h, na.rm = FALSE)
+  
+Self_Reported_Duration <- na.omit(df$psqi_4)
+hist(Self_Reported_Duration,prob=TRUE,main="Normal density + histogram")
+  lines(density(Self_Reported_Duration),lty="dotted",col="red")
+  
+sd(df$psqi_4, na.rm = FALSE)
+mean(df$psqi_4, na.rm = FALSE)
+
+cor.test(df$psqi_4, df$psqi_time_in_bed_h)
 ### Duration and Gender
 
 ggplot(data = df,
@@ -81,7 +102,7 @@ ggplot(data = df,
 
 ggplot(data = df,
        mapping = aes(x = df$gender,
-                     y = psqi_duration_c3,
+                     y = df$psqi_time_in_bed_h,
                      ))+
   stat_summary(fun.data = "mean_cl_boot",
                geom = "linerange") +
@@ -130,13 +151,17 @@ ggplot(df, aes(x = psqi_total))+
   geom_histogram(aes(y=..density..), colour="black", fill="white")+
   geom_density(alpha=.2, fill="red") 
 
-kable(df$race)
 ```
 
 ### Item Analysis PSQI
 
 ```{r}
+### Selecting Items
+psqi.df <- df %>% 
+  select(psqi_sq_c1,psqi_latency_c2,psqi_duration_c3,psqi_sf_c4)
+
 ### Componenten Consistency
+
 alpha(psqi.df)
 
 describe(psqi.df)
@@ -144,7 +169,17 @@ describe(psqi.df)
 ### intercorrelation
 
 ggpairs(df %>% 
-  select(psqi_sq_c1, psqi_latency_c2, psqi_duration_c3, psqi_sf, pers_pos_total))
+  select(psqi_sq_c1, psqi_latency_c2, psqi_time_in_bed_h, psqi_sf))
+
+### distribution PSQI_total
+PSQI_Total <- df$psqi_total / 4
+
+ggplot(df, aes(x = PSQI_Total))+
+  geom_histogram(aes(y=..density..), colour="black", fill="white")+
+  geom_density(alpha=.2, fill="red")
+
+sd(PSQI_Total, na.rm = FALSE)
+mean(PSQI_Total, na.rm = FALSE)
 
 ```
 ### 1 Component PSQI
@@ -177,6 +212,9 @@ summary(tmp8)
 ggplot(data = df, mapping = aes(x = psqi_sq_c1, y = pers_pos_total)) +
   geom_point() +
   geom_smooth(method = "lm")
+
+tmp3 <- lm(df$psqi_sq_c1 ~df$pers_pos_act + df$pers_pos_dur + df$pers_pos_int, data = df)
+summary(tmp3)
 
 tmp4 <- lm(df$pers_pos_total ~ df$psqi_sq_c1, data = df)
 summary(tmp4)
@@ -247,7 +285,7 @@ ggplot(data = df, mapping = aes(x = psqi_4, y = pers_neg_total)) +
   geom_point() +
   geom_smooth(method = "lm")
 
-tmp2 <- lm(df$pers_neg_total ~ df$psqi_4, data = df)
+tmp2 <- lm(df$pers_neg_total ~ df$psqi_time, data = df)
 summary(tmp2)
 
 ### which part is contributes to that relationship most (IT IS INTENSITY)
@@ -255,7 +293,7 @@ summary(tmp2)
 tmp3 <- lm(df$psqi_4 ~df$pers_neg_act + df$pers_neg_dur + df$pers_neg_int, data = df)
 summary(tmp3)
 
-tmp7 <- lm(df$pers_neg_dur ~ df$psqi_4, data = df)
+tmp7 <- lm(df$pers_neg_dur ~ df$psqi_time, data = df)
 summary(tmp7)
 
 tmp4 <- lm(df$pers_neg_act ~ df$psqi_4, data = df)
@@ -349,8 +387,9 @@ summary(tmp4)
 ```{r}
 ### Componenten Consistency
 PERSpos.df <- df %>%  
-  select(starts_with("pers_pos"), - pers_pos_total) %>% 
-  alpha()
+  select(starts_with("pers_pos"), - pers_pos_total)
+
+alpha(PERSpos.df)
 
 PERSneg.df <- df %>% 
   select(starts_with("pers_neg"), - pers_neg_total) 
@@ -365,8 +404,10 @@ describe(PERS.df)
 ### intercorrelation
 
 ggpairs(df %>% 
-  select(psqi_sq_c1, psqi_latency_c2, psqi_duration_c3, psqi_sf, pers_pos_total))
+  select(pers_pos_act, pers_pos_dur, pers_pos_int, pers_pos_total))
 
+ggpairs(df %>% 
+  select(pers_neg_act, pers_neg_dur, pers_neg_int, pers_neg_total))
 ```
 
 
