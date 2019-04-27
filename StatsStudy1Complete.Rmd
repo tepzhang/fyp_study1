@@ -1,0 +1,393 @@
+---
+title: "StatsStudy1Complete"
+author: "Jonas Schöne"
+date: "25 April 2019"
+output: html_document
+---
+
+### library
+
+```{r}
+library(tidyverse)
+library(psych)
+library(GGally)
+library(Hmisc)
+library(kableExtra)
+```
+
+
+### load Data-File
+
+```{r}
+df <- read.csv("data/data_questionnaire_complete.csv")
+```
+
+### Filter 1 Case with a irregular bedtime, which is probably a missclick. Highly unlikely that a student goes to bed at 2PM.
+
+```{r}
+df <- df %>% 
+ filter(participant != 261)
+```
+
+### Demografics 
+
+```{r}
+### Age Distribution
+
+ggplot(data = df,
+       mapping = aes(x = age)) 
+  geom_bar() 
+
+describe(df$age)
+describe.by(df$age, df$gender)
+
+### Race 
+
+table(df$race)
+
+### Duration and Gender
+
+ggplot(data = df,
+       mapping = aes(x = df$gender,
+                     y = df$psqi_time_in_bed_h,
+                     ))+
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "linerange") +
+  stat_summary(fun.y = "mean",
+               geom = "point",
+               color = "red")
+
+### PSQI Components Gender
+
+ggplot(data = df,
+       mapping = aes(x = df$gender,
+                     y = psqi_sq_c1,
+                     ))+
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "linerange") +
+  stat_summary(fun.y = "mean",
+               geom = "point",
+               color = "red")
+
+ggplot(data = df,
+       mapping = aes(x = df$gender,
+                     y = psqi_latency_c2,
+                     ))+
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "linerange") +
+  stat_summary(fun.y = "mean",
+               geom = "point",
+               color = "red")
+
+ggplot(data = df,
+       mapping = aes(x = df$gender,
+                     y = psqi_duration_c3,
+                     ))+
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "linerange") +
+  stat_summary(fun.y = "mean",
+               geom = "point",
+               color = "red")
+
+ggplot(data = df,
+       mapping = aes(x = df$gender,
+                     y = psqi_sf,
+                     ))+
+  stat_summary(fun.data = "mean_cl_boot",
+               geom = "linerange") +
+  stat_summary(fun.y = "mean",
+               geom = "point",
+               color = "red")
+
+SleepQualityDes <- describe(df$psqi_sq_c1)
+SleepLatencyDes <- describe(df$psqi_latency_c2)
+SleepDurationDes <- describe(df$psqi_duration_c3)
+SleepEffeciencyDes <- describe(df$psqi_sf)
+
+DistrPSQIGender <- describeBy (df$psqi_total,group = df$gender)
+
+### distribution of PSQI scores
+PSQItotalMean <- df$psqi_total/4
+PSQItotalDes <- describe(PSQItotalMean)
+
+ggplot(data = df,
+       mapping = aes(x = PSQItotalMean)) +
+  geom_density() 
+
+
+# tempx <- na.omit(df$psqi_total)
+# tempx <- tempx / 4
+# hist(x,prob=TRUE,main="Normal density + histogram")
+#   lines(density(x),lty="dotted",col="red")
+                     
+```
+#### Tests
+
+```{r}
+###Test
+
+ggplot(df, aes(x = psqi_total))+
+  geom_histogram(aes(y=..density..), colour="black", fill="white")+
+  geom_density(alpha=.2, fill="red") 
+
+kable(df$race)
+```
+
+### Item Analysis PSQI
+
+```{r}
+### Componenten Consistency
+alpha(psqi.df)
+
+describe(psqi.df)
+
+### intercorrelation
+
+ggpairs(df %>% 
+  select(psqi_sq_c1, psqi_latency_c2, psqi_duration_c3, psqi_sf, pers_pos_total))
+
+```
+### 1 Component PSQI
+
+```{r}
+### PSQI 1 and NEG
+ggplot(data = df, mapping = aes(x = psqi_sq_c1, y = pers_neg_total)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+tmp2 <- lm(df$pers_neg_total ~ df$psqi_sq_c1, data = df)
+summary(tmp2)
+
+### which part is contributes to that relationship most (IT IS INTENSITY)
+
+tmp3 <- lm(df$psqi_sq_c1 ~df$pers_neg_act + df$pers_neg_dur + df$pers_neg_int, data = df)
+summary(tmp3)
+
+tmp7 <- lm(df$pers_neg_dur ~ df$psqi_sq_c1, data = df)
+summary(tmp7)
+
+tmp4 <- lm(df$pers_neg_act ~ df$psqi_sq_c1, data = df)
+summary(tmp4)
+
+tmp8 <- lm(df$pers_neg_int ~ df$psqi_sq_c1, data = df)
+summary(tmp8)
+
+### PSQI Pos
+
+ggplot(data = df, mapping = aes(x = psqi_sq_c1, y = pers_pos_total)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+tmp4 <- lm(df$pers_pos_total ~ df$psqi_sq_c1, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_dur ~ df$psqi_sq_c1, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_act ~ df$psqi_sq_c1, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_int ~ df$psqi_sq_c1, data = df)
+summary(tmp4)
+
+```
+### Component 2 Latency
+
+```{r}
+### PSQI 2 and NEG
+ggplot(data = df, mapping = aes(x = psqi_latency_c2, y = pers_neg_total)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+tmp2 <- lm(df$pers_neg_total ~ df$psqi_latency_c2, data = df)
+summary(tmp2)
+
+### which part is contributes to that relationship most (IT IS INTENSITY)
+
+tmp3 <- lm(df$psqi_latency_c2 ~df$pers_neg_act + df$pers_neg_dur + df$pers_neg_int, data = df)
+summary(tmp3)
+
+tmp7 <- lm(df$pers_neg_dur ~ df$psqi_latency_c2, data = df)
+summary(tmp7)
+
+tmp4 <- lm(df$pers_neg_act ~ df$psqi_latency_c2, data = df)
+summary(tmp4)
+
+tmp8 <- lm(df$pers_neg_int ~ df$psqi_latency_c2, data = df)
+summary(tmp8)
+
+### PSQI Pos
+
+ggplot(data = df, mapping = aes(x = psqi_latency_c2, y = pers_pos_total)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+### which part is contributes to that relationship most (IT IS INTENSITY)
+
+tmp3 <- lm(df$psqi_latency_c2 ~df$pers_pos_act + df$pers_pos_dur + df$pers_pos_int, data = df)
+summary(tmp3)
+
+tmp4 <- lm(df$pers_pos_total ~ df$psqi_latency_c2, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_dur ~ df$psqi_latency_c2, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_act ~ df$psqi_latency_c2, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_int ~ df$psqi_latency_c2, data = df)
+summary(tmp4)
+```
+### 3.Componente Duration
+
+```{r}
+### PSQI 3 and NEG
+ggplot(data = df, mapping = aes(x = psqi_4, y = pers_neg_total)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+tmp2 <- lm(df$pers_neg_total ~ df$psqi_4, data = df)
+summary(tmp2)
+
+### which part is contributes to that relationship most (IT IS INTENSITY)
+
+tmp3 <- lm(df$psqi_4 ~df$pers_neg_act + df$pers_neg_dur + df$pers_neg_int, data = df)
+summary(tmp3)
+
+tmp7 <- lm(df$pers_neg_dur ~ df$psqi_4, data = df)
+summary(tmp7)
+
+tmp4 <- lm(df$pers_neg_act ~ df$psqi_4, data = df)
+summary(tmp4)
+
+tmp8 <- lm(df$pers_neg_int ~ df$psqi_4, data = df)
+summary(tmp8)
+
+### PSQI Pos
+
+ggplot(data = df, mapping = aes(x = psqi_4, y = pers_pos_total)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+### which part is contributes to that relationship most (IT IS INTENSITY)
+
+tmp3 <- lm(df$psqi_4 ~ df$pers_pos_act + df$pers_pos_dur + df$pers_pos_int, data = df)
+summary(tmp3)
+
+tmp4 <- lm(df$pers_pos_total ~ df$psqi_4, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_dur ~ df$psqi_4, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_act ~ df$psqi_4, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_int ~ df$psqi_4, data = df)
+summary(tmp4)
+
+## CORRELATION BETWEEN REPORTED AND CALCULATED DURATION
+
+tmp2 <- lm(df$psqi_time_in_bed_h ~ df$psqi_4, data = df)
+summary(tmp2)
+
+# r^2 = .145 
+```
+### Sleep Efficancy
+
+```{r}
+
+### PSQI 4 and NEG
+ggplot(data = df, mapping = aes(x = psqi_sf, y = pers_neg_total)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+tmp2 <- lm(df$pers_neg_total ~ df$psqi_sf, data = df)
+summary(tmp2)
+
+### which part is contributes to that relationship most (IT IS INTENSITY)
+
+tmp3 <- lm(df$psqi_sf ~df$pers_neg_act + df$pers_neg_dur + df$pers_neg_int, data = df)
+summary(tmp3)
+
+tmp7 <- lm(df$pers_neg_dur ~ df$psqi_sf, data = df)
+summary(tmp7)
+
+tmp4 <- lm(df$pers_neg_act ~ df$psqi_sf, data = df)
+summary(tmp4)
+
+tmp8 <- lm(df$pers_neg_int ~ df$psqi_sf, data = df)
+summary(tmp8)
+
+### PSQI Pos
+
+ggplot(data = df, mapping = aes(x = psqi_sf, y = pers_pos_total)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+### which part is contributes to that relationship most (IT IS INTENSITY)
+
+tmp3 <- lm(df$psqi_sf ~ df$pers_pos_act + df$pers_pos_dur + df$pers_pos_int, data = df)
+summary(tmp3)
+
+tmp4 <- lm(df$pers_pos_total ~ df$psqi_sf, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_dur ~ df$psqi_sf, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_act ~ df$psqi_sf, data = df)
+summary(tmp4)
+
+tmp4 <- lm(df$pers_pos_int ~ df$psqi_sf, data = df)
+summary(tmp4)
+
+```
+###Item analyse PERS
+
+```{r}
+### Componenten Consistency
+PERSpos.df <- df %>%  
+  select(starts_with("pers_pos"), - pers_pos_total) %>% 
+  alpha()
+
+PERSneg.df <- df %>% 
+  select(starts_with("pers_neg"), - pers_neg_total) 
+  
+alpha(PERSneg.df)
+
+PERS.df <- df %>% 
+  select(participant, starts_with("pers_pos"), starts_with("pers_neg"))
+
+describe(PERS.df)
+
+### intercorrelation
+
+ggpairs(df %>% 
+  select(psqi_sq_c1, psqi_latency_c2, psqi_duration_c3, psqi_sf, pers_pos_total))
+
+```
+
+
+
+### correlation stuff PSQI (Sleep Quality) and Reactivity (PERS)
+
+```{r}
+ggpairs(df %>% 
+  select(psqi_total, pers_pos_total, pers_neg_total))
+
+ggpairs(df %>% 
+  select(psqi_sq_c1, psqi_latency_c2, psqi_duration_c3, psqi_sf, pers_pos_total, pers_neg_total))
+
+ggpairs(df %>% 
+  select(psqi_time_in_bed_h,psqi_sf, pers_pos_total, pers_neg_total))
+
+
+```
+
+```{r}
+anorex.1 <- lm(df$pers_neg_total ~ df$psqi_sq_c1 + psqi_latency_c2 + psqi_duration_c3 + psqi_sf ,data = df)
+summary(anorex.1)
+```
+
