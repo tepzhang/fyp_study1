@@ -285,7 +285,6 @@ wf2 <- wf2 %>%
     wf2$psqi_6 == "Fairly good"~ "1",
     wf2$psqi_6 == "Fairly bad"~ "2",
     wf2$psqi_6 == "Very bad"~ "3",
-    wf2$psqi_6 == "" ~ "-1",
   ))
 
 wf2$psqi_sq_c1 <- as.numeric(wf2$psqi_sq_c1)
@@ -294,11 +293,10 @@ wf2$psqi_sq_c1 <- as.numeric(wf2$psqi_sq_c1)
 
 wf2 <- wf2 %>% 
   mutate(psqi_latency_a = case_when(
-    wf2$psqi_2 < 16 ~ "0",
+    wf2$psqi_2 < 16 & wf2$psqi_2 >= 0 ~ "0",
     wf2$psqi_2 > 15 & wf2$psqi_2 < 31 ~ "1",
     wf2$psqi_2 > 30 & wf2$psqi_2 < 61 ~ "2",
     wf2$psqi_2 > 60 ~ "3",
-    wf2$psqi_2 == "" ~ "-1",
   ))
 
 wf2$psqi_latency_a <- as.numeric(wf2$psqi_latency_a)
@@ -309,7 +307,6 @@ wf2 <- wf2 %>%
     wf2$psqi_5a == "Not during the past month" ~ "0",
     wf2$psqi_5a == "Once or twice a week" ~ "2",
     wf2$psqi_5a == "Three or more times a week" ~ "3",
-    wf2$psqi_5a == "" ~ "-1",
   ))
 
 wf2$psqi_latency_b <- as.numeric(wf2$psqi_latency_b)
@@ -333,8 +330,7 @@ wf2 <- wf2 %>%
     wf2$psqi_4 > 7 ~ "0",
     wf2$psqi_4 < 8 & wf2$psqi_4 > 5 ~ "1",
     wf2$psqi_4 < 7 & wf2$psqi_4 > 4 ~ "2",
-    wf2$psqi_4 < 5 ~ "3",
-    wf2$psqi_4 == "" ~ "-1",
+    wf2$psqi_4 < 5 & wf2$psqi_4 >= 0~ "3",
   ))
 
 wf2$psqi_duration_c3 <- as.numeric(wf2$psqi_duration_c3)
