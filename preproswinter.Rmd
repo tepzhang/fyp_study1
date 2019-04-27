@@ -493,3 +493,31 @@ we will merge data_questionnaire_1 (select(participant, age, race, gender, gende
 write.csv(df_1, "data/data_questionnaire_2.csv")
 ```
 
+### loading the file that will be merged with
+
+```{r}
+df_2 <- read.csv(file= "data/data_questionnaire_1.csv")
+```
+
+### selecting relevant variables in the right order from second df
+
+```{r}
+df_2 <- df_2 %>% 
+  select(participant, age, race, gender, gender_other, starts_with("psqi"), starts_with("pers_") )
+```
+
+### adding the number of participant from df2 to the df1´s so that no participant number is double
+and combine them
+
+```{r}
+df_1$participant <- df_1$participant + 191 
+
+df_all <- rbind(df_1, df_2)
+```
+
+### print complete questionnaire
+
+```{r}
+write.csv(df_all, "data/data_questionnaire_complete.csv")
+```
+
