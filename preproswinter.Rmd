@@ -21,11 +21,12 @@ library(readr)
 
 
 ###
-Read raw-file
+Read raw-file_Winter
 ###
 
 ```{r}
 dfraw <- read.csv2('D:/DownloadsDesktop/Desktop/Stanford/Bachelr-Thesis/WinterData/Winter19_Eligibility_Survey.csv',header =TRUE, sep =',')
+
 ```
 
 ## selecting relevant variables
@@ -92,7 +93,6 @@ dfrawshort <- dfrawshort %>%
     dfrawshort$psqi_6 == "Fairly good"~ "1",
     dfrawshort$psqi_6 == "Fairly bad"~ "2",
     dfrawshort$psqi_6 == "Very bad"~ "3",
-    dfrawshort$psqi_6 == "" ~ "-1",
   ))
 
 dfrawshort$psqi_sq_c1 <- as.numeric(dfrawshort$psqi_sq_c1)
@@ -105,7 +105,6 @@ dfrawshort <- dfrawshort %>%
     dfrawshort$psqi_2 > 15 & dfrawshort$psqi_2 < 31 ~ "1",
     dfrawshort$psqi_2 > 30 & dfrawshort$psqi_2 < 61 ~ "2",
     dfrawshort$psqi_2 > 60 ~ "3",
-    dfrawshort$psqi_2 == "" ~ "-1",
   ))
 
 dfrawshort$psqi_latency_a <- as.numeric(dfrawshort$psqi_latency_a)
@@ -116,7 +115,6 @@ dfrawshort <- dfrawshort %>%
     dfrawshort$psqi_5a == "Not during the past month" ~ "0",
     dfrawshort$psqi_5a == "Once or twice a week" ~ "2",
     dfrawshort$psqi_5a == "Three or more times a week" ~ "3",
-    dfrawshort$psqi_5a == "" ~ "-1",
   ))
 
 dfrawshort$psqi_latency_b <- as.numeric(dfrawshort$psqi_latency_b)
@@ -493,6 +491,503 @@ we will merge data_questionnaire_1 (select(participant, age, race, gender, gende
 write.csv(df_1, "data/data_questionnaire_2.csv")
 ```
 
+
+##### END OF WINTER PREPROCESSING
+
+
+
+
+
+
+
+
+
+
+###
+Read raw-file_Spring
+###
+
+```{r}
+yfraw <- read.csv2('D:/DownloadsDesktop/Desktop/Stanford/Bachelr-Thesis/WinterData/Spring_2019_Eligibility_Survey.csv',header =TRUE, sep =';')
+
+```
+
+## selecting relevant variables
+Use the same order to select the data frame for the autumn data
+```{r}
+yfrawshort <- yfraw %>% 
+  select(participant, age, race, gender, gender_other, starts_with("psqi"), starts_with("pers_") )
+```
+
+## Sleep Quality PSQI
+
+```{r}
+yfrawshort <- yfrawshort %>%
+  mutate(psqi_1_hour_MT = psqi_1_hour + 12)
+
+yfrawshort$psqi_1_hour_MT[yfrawshort$psqi_1_ampm == 'AM'] = yfrawshort$psqi_1_hour_MT[yfrawshort$psqi_1_ampm == 'AM'] - 12
+
+yfrawshort <- yfrawshort
+
+## transforming it into min since last midnight in order to avoid min/h calculation problems while substracting
+## adding the min from another variable
+
+yfrawshort$psqi_1_hour_MT_min = (yfrawshort$psqi_1_hour_MT *60) + yfrawshort$psqi_1_min
+
+
+## to calculate the time slept until midnight (for example if someone felt asleep at 22:00, he slept 2h until mitnight and then I just add the minutes to the wake up), it will also be in minutes thats why 24 * 60 = 1440 ...lol
+
+yfrawshort$psqi_timetillmidnight [yfrawshort$psqi_1_ampm == 'PM'] <-  (24*60) - yfrawshort$psqi_1_hour_MT_min [yfrawshort$psqi_1_ampm == 'PM']
+
+##Sleep from midnight to morning RELEVANT FOR AM AND PM!!!
+
+yfrawshort$psqi_timetillwakeup <- (yfrawshort$psqi_3_hour * 60) + yfrawshort$psqi_3_min
+
+##Time spend in bed (PM) = time till midnight + time until wakey wakey 
+
+yfrawshort$psqi_time_in_bed_pm <-  yfrawshort$psqi_timetillmidnight + yfrawshort$psqi_timetillwakeup 
+
+## AM sleepers will be calculated by the difference between time until midnight when they fell asleep to their wake up
+
+yfrawshort$psqi_timeaftermidnight [yfrawshort$psqi_1_ampm == 'AM'] <- yfrawshort$psqi_1_hour_MT
+
+## time in bed wakeup time - time of falling asleep after midnight
+
+yfrawshort$psqi_time_in_bed_am <- yfrawshort$psqi_timetillwakeup - yfrawshort$psqi_timeaftermidnight
+
+## bringing am and pm together
+
+yfrawshort <- yfrawshort %>%
+  mutate(psqi_time_in_bed_min = case_when(
+   yfrawshort$psqi_1_ampm == 'AM'~ yfrawshort$psqi_time_in_bed_am,
+   yfrawshort$psqi_1_ampm == 'PM'~ yfrawshort$psqi_time_in_bed_pm
+  ))
+
+yfrawshort$psqi_time_in_bed_h <- yfrawshort$psqi_time_in_bed_min / 60
+
+### COMPONENTS ########################
+#####################
+
+###Component 1: Subjective sleep quality-question 9 (for us psqi_6)
+
+yfrawshort <- yfrawshort %>% 
+  mutate(psqi_sq_c1 = case_when(
+    yfrawshort$psqi_6 == "Very good"~ "0",
+    yfrawshort$psqi_6 == "Fairly good"~ "1",
+    yfrawshort$psqi_6 == "Fairly bad"~ "2",
+    yfrawshort$psqi_6 == "Very bad"~ "3",
+    yfrawshort$psqi_6 == "" ~ "-1",
+  ))
+
+yfrawshort$psqi_sq_c1 <- as.numeric(yfrawshort$psqi_sq_c1)
+
+###Component 2: Sleep latency-questions 2 and 5a
+
+yfrawshort <- yfrawshort %>% 
+  mutate(psqi_latency_a = case_when(
+    yfrawshort$psqi_2 < 16 ~ "0",
+    yfrawshort$psqi_2 > 15 & yfrawshort$psqi_2 < 31 ~ "1",
+    yfrawshort$psqi_2 > 30 & yfrawshort$psqi_2 < 61 ~ "2",
+    yfrawshort$psqi_2 > 60 ~ "3",
+    yfrawshort$psqi_2 == "" ~ "-1",
+  ))
+
+yfrawshort$psqi_latency_a <- as.numeric(yfrawshort$psqi_latency_a)
+
+yfrawshort <- yfrawshort %>% 
+  mutate(psqi_latency_b = case_when(
+    yfrawshort$psqi_5a == "Less than once a week" ~ "1",
+    yfrawshort$psqi_5a == "Not during the past month" ~ "0",
+    yfrawshort$psqi_5a == "Once or twice a week" ~ "2",
+    yfrawshort$psqi_5a == "Three or more times a week" ~ "3",
+    yfrawshort$psqi_5a == "" ~ "-1",
+  ))
+
+yfrawshort$psqi_latency_b <- as.numeric(yfrawshort$psqi_latency_b)
+
+yfrawshort$psqi_latency_ab <- yfrawshort$psqi_latency_b + yfrawshort$psqi_latency_a
+
+yfrawshort <- yfrawshort %>% 
+  mutate(psqi_latency_c2 = case_when(
+    yfrawshort$psqi_latency_ab == 0 ~ "0",
+    yfrawshort$psqi_latency_ab > 0 & yfrawshort$psqi_latency_ab < 3 ~ "1",
+    yfrawshort$psqi_latency_ab > 2 & yfrawshort$psqi_latency_ab < 5 ~ "2",
+    yfrawshort$psqi_latency_ab > 4 ~ "3"
+  ))
+
+yfrawshort$psqi_latency_c2 <- as.numeric(yfrawshort$psqi_latency_c2)
+
+####Component 3: Sleep duration-question 4
+
+yfrawshort <- yfrawshort %>% 
+  mutate(psqi_duration_c3 = case_when(
+    yfrawshort$psqi_4 > 7 ~ "0",
+    yfrawshort$psqi_4 < 8 & yfrawshort$psqi_4 > 5 ~ "1",
+    yfrawshort$psqi_4 < 7 & yfrawshort$psqi_4 > 4 ~ "2",
+    yfrawshort$psqi_4 < 5 ~ "3",
+    yfrawshort$psqi_4 == "" ~ "-1",
+  ))
+
+yfrawshort$psqi_duration_c3 <- as.numeric(yfrawshort$psqi_duration_c3)
+    
+
+
+####Component 4: Sleep efficiency-questions 1, 3, and 4
+
+## variable for % 
+yfrawshort$psqi_sf <- (yfrawshort$psqi_4 / yfrawshort$psqi_time_in_bed_h) * 100
+
+yfrawshort <- yfrawshort %>% 
+  mutate(psqi_sf_c4 = case_when(
+    yfrawshort$psqi_sf > 85 ~ 0,
+    yfrawshort$psqi_sf > 74 & yfrawshort$psqi_sf < 85 ~ 1,
+    yfrawshort$psqi_sf > 64 & yfrawshort$psqi_latency_ab < 75 ~ 2,
+    yfrawshort$psqi_sf < 65 ~ 3
+  ))
+
+####Overall_Score
+
+yfrawshort$psqi_total <- yfrawshort$psqi_sq_c1 + yfrawshort$psqi_latency_c2 + yfrawshort$psqi_duration_c3 + yfrawshort$psqi_sf_c4
+
+yfrawshort %>% 
+    select(starts_with("psqi"))
+
+#### Visuals psqi
+
+ggplot(yfrawshort, aes(x = yfrawshort$psqi_total)) + 
+            geom_histogram( binwidth=1, color="black", fill="white")
+
+```
+
+```{r}
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_1 = case_when(
+    yfrawshort$pers_1 == "Very unlike me" ~ 1,
+    yfrawshort$pers_1 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_1 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_1 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_1 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_2 = case_when(
+    yfrawshort$pers_2 == "Very unlike me" ~ 1,
+    yfrawshort$pers_2 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_2 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_2 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_2 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_3 = case_when(
+    yfrawshort$pers_3 == "Very unlike me" ~ 1,
+    yfrawshort$pers_3 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_3 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_3 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_3 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_4 = case_when(
+    yfrawshort$pers_4 == "Very unlike me" ~ 1,
+    yfrawshort$pers_4 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_4 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_4 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_4 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_5 = case_when(
+    yfrawshort$pers_5 == "Very unlike me" ~ 1,
+    yfrawshort$pers_5 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_5 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_5 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_5 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_6 = case_when(
+    yfrawshort$pers_6 == "Very unlike me" ~ 1,
+    yfrawshort$pers_6 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_6 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_6 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_6 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_7 = case_when(
+    yfrawshort$pers_7 == "Very unlike me" ~ 1,
+    yfrawshort$pers_7 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_7 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_7 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_7 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_8 = case_when(
+    yfrawshort$pers_8 == "Very unlike me" ~ 1,
+    yfrawshort$pers_8 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_8 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_8 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_8 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_9 = case_when(
+    yfrawshort$pers_9 == "Very unlike me" ~ 1,
+    yfrawshort$pers_9 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_9 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_9 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_9 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_10 = case_when(
+    yfrawshort$pers_10 == "Very unlike me" ~ 1,
+    yfrawshort$pers_10 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_10 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_10 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_10 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_11 = case_when(
+    yfrawshort$pers_11 == "Very unlike me" ~ 1,
+    yfrawshort$pers_11 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_11 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_11 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_11 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_12 = case_when(
+    yfrawshort$pers_12 == "Very unlike me" ~ 1,
+    yfrawshort$pers_12 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_12 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_12 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_12 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_13 = case_when(
+    yfrawshort$pers_13 == "Very unlike me" ~ 1,
+    yfrawshort$pers_13 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_13 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_13 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_13 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_14 = case_when(
+    yfrawshort$pers_14 == "Very unlike me" ~ 1,
+    yfrawshort$pers_14 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_14 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_14 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_14 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_15 = case_when(
+    yfrawshort$pers_15 == "Very unlike me" ~ 1,
+    yfrawshort$pers_15 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_15 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_15 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_15 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_16 = case_when(
+    yfrawshort$pers_16 == "Very unlike me" ~ 1,
+    yfrawshort$pers_16 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_16 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_16 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_16 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_17 = case_when(
+    yfrawshort$pers_17 == "Very unlike me" ~ 1,
+    yfrawshort$pers_17 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_17 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_17 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_17 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_18 = case_when(
+    yfrawshort$pers_18 == "Very unlike me" ~ 1,
+    yfrawshort$pers_18 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_18 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_18 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_18 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_19 = case_when(
+    yfrawshort$pers_19 == "Very unlike me" ~ 1,
+    yfrawshort$pers_19 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_19 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_19 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_19 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_20 = case_when(
+    yfrawshort$pers_20 == "Very unlike me" ~ 1,
+    yfrawshort$pers_20 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_20 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_20 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_20 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_21 = case_when(
+    yfrawshort$pers_21 == "Very unlike me" ~ 1,
+    yfrawshort$pers_21 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_21 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_21 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_21 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_22 = case_when(
+    yfrawshort$pers_22 == "Very unlike me" ~ 1,
+    yfrawshort$pers_22 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_22 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_22 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_22 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_23 = case_when(
+    yfrawshort$pers_23 == "Very unlike me" ~ 1,
+    yfrawshort$pers_23 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_23 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_23 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_23 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_24 = case_when(
+    yfrawshort$pers_24 == "Very unlike me" ~ 1,
+    yfrawshort$pers_24 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_24 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_24 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_24 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_25 = case_when(
+    yfrawshort$pers_25 == "Very unlike me" ~ 1,
+    yfrawshort$pers_25 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_25 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_25 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_25 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_26 = case_when(
+    yfrawshort$pers_26 == "Very unlike me" ~ 1,
+    yfrawshort$pers_26 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_26 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_26 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_26 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_27 = case_when(
+    yfrawshort$pers_27 == "Very unlike me" ~ 1,
+    yfrawshort$pers_27 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_27 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_27 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_27 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_28 = case_when(
+    yfrawshort$pers_28 == "Very unlike me" ~ 1,
+    yfrawshort$pers_28 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_28 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_28 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_28 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_29 = case_when(
+    yfrawshort$pers_29 == "Very unlike me" ~ 1,
+    yfrawshort$pers_29 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_29 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_29 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_29 == "Very like me" ~ 5,
+  ))
+
+yfrawshort <- yfrawshort %>% 
+  mutate(pers_30 = case_when(
+    yfrawshort$pers_30 == "Very unlike me" ~ 1,
+    yfrawshort$pers_30 == "Somewhat unlike me" ~ 2,
+    yfrawshort$pers_30 == "Neither like or unlike me"  ~ 3,
+    yfrawshort$pers_30 == "Somewhat like me" ~ 4,
+    yfrawshort$pers_30 == "Very like me" ~ 5,
+  ))
+
+#### General positive reactivity scale ####
+
+## Positive-activation
+yfrawshort$pers_pos_act <- (yfrawshort$pers_1 + yfrawshort$pers_7 + yfrawshort$pers_13 + yfrawshort$pers_19 + yfrawshort$pers_25)/5
+
+## Positive-intensity
+yfrawshort$pers_pos_int <- (yfrawshort$pers_5 + yfrawshort$pers_11 + yfrawshort$pers_17 + yfrawshort$pers_23 + yfrawshort$pers_29)/5
+
+## Positive-duration
+yfrawshort$pers_pos_dur <- (yfrawshort$pers_3 + yfrawshort$pers_9 + yfrawshort$pers_15 + yfrawshort$pers_27 + yfrawshort$pers_21)/5
+
+##Positive Total
+
+yfrawshort$pers_pos_total <- (yfrawshort$pers_pos_act + yfrawshort$pers_pos_int + yfrawshort$pers_pos_dur)/3
+
+### General negative reactivity scale ###
+
+### Negative-activation
+yfrawshort$pers_neg_act <- (yfrawshort$pers_2 + yfrawshort$pers_8 + yfrawshort$pers_14 + yfrawshort$pers_20 + yfrawshort$pers_26)/5
+
+### Negative-intensity
+yfrawshort$pers_neg_int <- (yfrawshort$pers_6 + yfrawshort$pers_12 + yfrawshort$pers_18 + yfrawshort$pers_24 + yfrawshort$pers_30)/5
+
+## Negative-duration
+yfrawshort$pers_neg_dur <- (yfrawshort$pers_4 + yfrawshort$pers_10 + yfrawshort$pers_16 + yfrawshort$pers_22 + yfrawshort$pers_28)/5
+
+## Negative Total
+
+yfrawshort$pers_neg_total <- (yfrawshort$pers_neg_act + yfrawshort$pers_neg_int + yfrawshort$pers_neg_dur)/3
+
+yfrawshort%>% 
+    select(participant, starts_with("pers")) 
+```
+### rearrange new variables
+
+```{r}
+yf_1 <- yfrawshort %>% 
+  select(participant, age, race, gender, gender_other, starts_with("psqi"), starts_with("pers_") )
+```
+
+
+
+#### END OF SPRING PREPROCESSING
+
+
+
+
+
+
+
+
+### produce output file without names that will be merged in next step lol
+we will merge data_questionnaire_1 (select(participant, age, race, gender, gender_other, starts_with("psqi"), starts_with("pers_") ) ) with data_questionnaire_2 with this stuff
+
+```{r}
+write.csv(yf_1, "data/data_questionnaire_2.csv")
+```
+
 ### loading the file that will be merged with
 
 ```{r}
@@ -504,15 +999,11 @@ df_2 <- read.csv(file= "data/data_questionnaire_1.csv")
 ```{r}
 df_2 <- df_2 %>% 
   select(participant, age, race, gender, gender_other, starts_with("psqi"), starts_with("pers_") )
-```
-
-### adding the number of participant from df2 to the df1´s so that no participant number is double
-and combine them
-
-```{r}
-df_1$participant <- df_1$participant + 191 
 
 df_all <- rbind(df_1, df_2)
+df_all <- rbind(yf_1, df_all)
+
+df_all$participant <- c (1:length(df_all$participant))
 ```
 
 ### print complete questionnaire
