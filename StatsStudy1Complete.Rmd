@@ -423,7 +423,18 @@ ggpairs(df %>%
 ```
 
 ```{r}
-anorex.1 <- lm(df$pers_neg_total ~ df$psqi_sq_c1 + psqi_latency_c2 + psqi_4 + psqi_sf ,data = df)
+# get the clean dataframe
+df_final <- df %>% 
+  filter(!is.na(psqi_sq_c1),!is.na(pers_neg_total))
+
+# linear regression for standardized coefficients
+lm(scale(pers_neg_total) ~ scale(psqi_sq_c1) + scale(psqi_latency_c2) + scale(psqi_4),data = df_final) %>% summary()
+
+lm(scale(pers_pos_total) ~ scale(psqi_sq_c1) + scale(psqi_latency_c2) + scale(psqi_4),data = df_final) %>% summary()
+
+
+
+anorex.1 <- lm(pers_neg_total ~ psqi_sq_c1 + psqi_latency_c2 + psqi_4 + psqi_sf ,data = df)
 summary(anorex.1)
 
 ggplot(data = df, mapping = aes(x = psqi_sf + psqi_latency_c2 + psqi_4 + psqi_sf, y = pers_neg_total)) +
