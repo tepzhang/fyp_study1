@@ -415,20 +415,26 @@ ggpairs(df %>%
 ### correlation stuff PSQI (Sleep Quality) and Reactivity (PERS)
 
 ```{r}
-ggpairs(df %>% 
-  select(psqi_total, pers_pos_total, pers_neg_total))
 
 ggpairs(df %>% 
-  select(psqi_sq_c1, psqi_latency_c2, psqi_duration_c3, psqi_sf, pers_pos_total, pers_neg_total))
-
-ggpairs(df %>% 
-  select(psqi_time_in_bed_h,psqi_sf, pers_pos_total, pers_neg_total))
+  select(psqi_sq_c1, psqi_latency_c2, psqi_4, psqi_sf, pers_pos_total, pers_neg_total))
 
 
 ```
 
 ```{r}
-anorex.1 <- lm(df$pers_neg_total ~ df$psqi_sq_c1 + psqi_latency_c2 + psqi_duration_c3 + psqi_sf ,data = df)
+anorex.1 <- lm(df$pers_neg_total ~ df$psqi_sq_c1 + psqi_latency_c2 + psqi_4 + psqi_sf ,data = df)
 summary(anorex.1)
+
+ggplot(data = df, mapping = aes(x = psqi_sf + psqi_latency_c2 + psqi_4 + psqi_sf, y = pers_neg_total)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+anorex.2 <- lm(df$pers_pos_total ~ df$psqi_sq_c1 + psqi_latency_c2 + psqi_4 + psqi_sf ,data = df)
+summary(anorex.2)
+
+ggplot(data = df, mapping = aes(x = psqi_sf + psqi_latency_c2 + psqi_4 + psqi_sf, y = pers_pos_total)) +
+  geom_point() +
+  geom_smooth(method = "lm")
 ```
 
