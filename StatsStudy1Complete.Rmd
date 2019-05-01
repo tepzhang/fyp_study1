@@ -19,7 +19,7 @@ library(kableExtra)
 ### load Data-File
 
 ```{r}
-df <- read.csv("data/data_questionnaire_complete.csv")
+df1 <- read.csv("data/data_questionnaire_complete.csv")
 ```
 
 ### Filter 1 Case with a irregular bedtime, which is probably a missclick. Highly unlikely that a student goes to bed at 2PM.
@@ -27,9 +27,27 @@ df <- read.csv("data/data_questionnaire_complete.csv")
 ### !!! The two excluded cases are most likely misclicks, because they also told that they sleep 6h. WHich only workes if you switch AM/PM
 
 ```{r}
-df <- df %>% 
+df1 <- df1 %>% 
  filter(psqi_time_in_bed_h < 13)
 ```
+
+## Getting a clean data frame
+```{r}
+# get the clean dataframe
+df <- df1 %>% 
+  filter(!is.na(psqi_sq_c1),!is.na(pers_neg_total), !is.na(pers_pos_total))
+```
+
+## Changing PSQI Efficacy values, which are over 100% to 100%
+
+```{r}
+df <- df %>% 
+  mutate (psqi_sf = case_when(
+    df$psqi_sf > 100 ~ 100,
+    df$psqi_sf <= 100 ~ df$psqi_sf
+    ))
+```
+
 
 ### Demografics 
 
@@ -181,6 +199,18 @@ ggplot(df, aes(x = PSQI_Total))+
 sd(PSQI_Total, na.rm = FALSE)
 mean(PSQI_Total, na.rm = FALSE)
 
+sd(df$psqi_2, na.rm = FALSE)
+mean(df$psqi_2, na.rm = FALSE)
+
+sd(df$psqi_sq_c1, na.rm = FALSE)
+mean(df$psqi_sq_c1, na.rm = FALSE)
+
+sd(df$psqi_sf, na.rm = FALSE)
+mean(df$psqi_sf, na.rm = FALSE)
+
+sd(df$psqi_4, na.rm = FALSE)
+mean(df$psqi_4, na.rm = FALSE)
+
 ```
 ### 1 Component PSQI
 
@@ -285,7 +315,7 @@ ggplot(data = df, mapping = aes(x = psqi_4, y = pers_neg_total)) +
   geom_point() +
   geom_smooth(method = "lm")
 
-tmp2 <- lm(df$pers_neg_total ~ df$psqi_time, data = df)
+tmp2 <- lm(df$pers_neg_total ~ df$psqi_time)
 summary(tmp2)
 
 ### which part is contributes to that relationship most (IT IS INTENSITY)
@@ -408,6 +438,12 @@ ggpairs(df %>%
 
 ggpairs(df %>% 
   select(pers_neg_act, pers_neg_dur, pers_neg_int, pers_neg_total))
+
+sd(df$pers_neg_total, na.rm = FALSE)
+mean(df$pers_neg_total, na.rm = FALSE)
+
+sd(df$pers_pos_total, na.rm = FALSE)
+mean(df$pers_pos_total, na.rm = FALSE)
 ```
 
 
@@ -423,14 +459,11 @@ ggpairs(df %>%
 ```
 
 ```{r}
-# get the clean dataframe
-df_final <- df %>% 
-  filter(!is.na(psqi_sq_c1),!is.na(pers_neg_total))
 
 # linear regression for standardized coefficients
-lm(scale(pers_neg_total) ~ scale(psqi_sq_c1) + scale(psqi_latency_c2) + scale(psqi_4),data = df_final) %>% summary()
+lm(scale(pers_neg_total) ~ scale(psqi_sq_c1) + scale(psqi_latency_c2) + scale(psqi_4),data = df) %>% summary()
 
-lm(scale(pers_pos_total) ~ scale(psqi_sq_c1) + scale(psqi_latency_c2) + scale(psqi_4),data = df_final) %>% summary()
+lm(scale(pers_pos_total) ~ scale(psqi_sq_c1) + scale(psqi_latency_c2) + scale(psqi_4),data = df) %>% summary()
 
 
 
@@ -447,5 +480,14 @@ summary(anorex.2)
 ggplot(data = df, mapping = aes(x = psqi_sf + psqi_latency_c2 + psqi_4 + psqi_sf, y = pers_pos_total)) +
   geom_point() +
   geom_smooth(method = "lm")
+```
+
+### OVerview o correlations for entry in article
+
+```{r}
+ov <- df %>%
+  select(psqi_total , psqi_sq_c1 , psqi_latency_c2 , psqi_4 , psqi_sf, pers_neg_total,pers_pos_total )
+
+corr.test(ov)
 ```
 
