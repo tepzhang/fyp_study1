@@ -13,6 +13,7 @@ library(psych)
 library(GGally)
 library(Hmisc)
 library(kableExtra)
+library(cowplot)
 ```
 
 
@@ -216,9 +217,16 @@ mean(df$psqi_4, na.rm = FALSE)
 
 ```{r}
 ### PSQI 1 and NEG
-ggplot(data = df, mapping = aes(x = psqi_sq_c1, y = pers_neg_total)) +
-  geom_point() +
-  geom_smooth(method = "lm")
+p1 <- ggplot(data = df, mapping = aes(x = 4-psqi_sq_c1, y = pers_neg_total)) +
+  geom_point(alpha = .5, position = position_jitter(width = .2)) +
+  geom_smooth(method = "lm")+
+  labs(x = "subjective sleep quality",
+       y = "PERS negative reactivity",
+       title = "Subjective sleep quality")+
+  scale_x_continuous(breaks = c(1, 2, 3, 4),
+                     labels = c("Very bad", "Fairly bad", "Fairly good", "Very good"))
+# ggsave("plots/pers_neg1.png", width = 4, height = 3)
+
 
 tmp2 <- lm(df$pers_neg_total ~ df$psqi_sq_c1, data = df)
 summary(tmp2)
@@ -239,9 +247,13 @@ summary(tmp8)
 
 ### PSQI Pos
 
-ggplot(data = df, mapping = aes(x = psqi_sq_c1, y = pers_pos_total)) +
-  geom_point() +
-  geom_smooth(method = "lm")
+p2 <- ggplot(data = df, mapping = aes(x = 4- psqi_sq_c1, y = pers_pos_total)) +
+  geom_point(alpha = .5, position = position_jitter(width = .2)) +
+  geom_smooth(method = "lm")+
+  labs(x = "subjective sleep quality",
+       y = "PERS positive reactivity",
+       title = "Subjective sleep quality")+
+  scale_x_continuous(labels = c("Very bad", "Fairly bad", "Fairly good", "Very good"))
 
 tmp3 <- lm(df$psqi_sq_c1 ~df$pers_pos_act + df$pers_pos_dur + df$pers_pos_int, data = df)
 summary(tmp3)
@@ -263,9 +275,14 @@ summary(tmp4)
 
 ```{r}
 ### PSQI 2 and NEG
-ggplot(data = df, mapping = aes(x = psqi_latency_c2, y = pers_neg_total)) +
-  geom_point() +
-  geom_smooth(method = "lm")
+p3 <- ggplot(data = df, mapping = aes(x = psqi_latency_c2, y = pers_neg_total)) +
+  geom_point(alpha = .5, position = position_jitter(width = .2)) +
+  geom_smooth(method = "lm")+
+  labs(x = "sleep onset latency",
+       y = "PERS negative reactivity",
+       title = "Sleep onset latency")+
+  scale_x_continuous(labels = c("0-15 min", "16-30 min", "31-60 min", "> 60 min"))
+
 
 tmp2 <- lm(df$pers_neg_total ~ df$psqi_latency_c2, data = df)
 summary(tmp2)
@@ -286,9 +303,13 @@ summary(tmp8)
 
 ### PSQI Pos
 
-ggplot(data = df, mapping = aes(x = psqi_latency_c2, y = pers_pos_total)) +
-  geom_point() +
-  geom_smooth(method = "lm")
+p4 <- ggplot(data = df, mapping = aes(x = psqi_latency_c2, y = pers_pos_total)) +
+  geom_point(alpha = .5, position = position_jitter(width = .2)) +
+  geom_smooth(method = "lm")+
+  labs(x = "sleep onset latency",
+       y = "PERS positive reactivity",
+       title = "Sleep onset latency")+
+  scale_x_continuous(labels = c("0-15 min", "16-30 min", "31-60 min", "> 60 min"))
 
 ### which part is contributes to that relationship most (IT IS INTENSITY)
 
@@ -311,9 +332,13 @@ summary(tmp4)
 
 ```{r}
 ### PSQI 3 and NEG
-ggplot(data = df, mapping = aes(x = psqi_4, y = pers_neg_total)) +
-  geom_point() +
-  geom_smooth(method = "lm")
+p5 <- ggplot(data = df, mapping = aes(x = psqi_4, y = pers_neg_total)) +
+  geom_point(alpha = .5, position = position_jitter(width = .1)) +
+  geom_smooth(method = "lm")+
+  labs(x = "sleep duration (hours)",
+       y = "PERS negative reactivity",
+       title = "Sleep duration")
+
 
 tmp2 <- lm(df$pers_neg_total ~ df$psqi_time)
 summary(tmp2)
@@ -334,9 +359,12 @@ summary(tmp8)
 
 ### PSQI Pos
 
-ggplot(data = df, mapping = aes(x = psqi_4, y = pers_pos_total)) +
-  geom_point() +
-  geom_smooth(method = "lm")
+p6 <- ggplot(data = df, mapping = aes(x = psqi_4, y = pers_pos_total)) +
+  geom_point(alpha = .5, position = position_jitter(width = .1)) +
+  geom_smooth(method = "lm")+
+  labs(x = "sleep duration (hours)",
+       y = "PERS positive reactivity",
+       title = "Sleep duration")
 
 ### which part is contributes to that relationship most (IT IS INTENSITY)
 
@@ -367,9 +395,12 @@ summary(tmp2)
 ```{r}
 
 ### PSQI 4 and NEG
-ggplot(data = df, mapping = aes(x = psqi_sf, y = pers_neg_total)) +
-  geom_point() +
-  geom_smooth(method = "lm")
+p7 <- ggplot(data = df, mapping = aes(x = psqi_sf, y = pers_neg_total)) +
+  geom_point(alpha = .5) +
+  geom_smooth(method = "lm")+
+  labs(x = "sleep efficiency (%)",
+       y = "PERS negative reactivity",
+       title = "Sleep efficiency")
 
 tmp2 <- lm(df$pers_neg_total ~ df$psqi_sf, data = df)
 summary(tmp2)
@@ -390,9 +421,12 @@ summary(tmp8)
 
 ### PSQI Pos
 
-ggplot(data = df, mapping = aes(x = psqi_sf, y = pers_pos_total)) +
-  geom_point() +
-  geom_smooth(method = "lm")
+p8 <- ggplot(data = df, mapping = aes(x = psqi_sf, y = pers_pos_total)) +
+  geom_point(alpha = .5) +
+  geom_smooth(method = "lm")+
+  labs(x = "sleep efficiency (%)",
+       y = "PERS positive reactivity",
+       title = "Sleep efficiency")
 
 ### which part is contributes to that relationship most (IT IS INTENSITY)
 
@@ -446,6 +480,18 @@ sd(df$pers_pos_total, na.rm = FALSE)
 mean(df$pers_pos_total, na.rm = FALSE)
 ```
 
+
+```{r correlation plots}
+plot_grid(p1, p5, p3, p7, nrow = 2)
+ggsave("plots/pers_neg_correlation.png", width = 8, height = 6)
+
+plot_grid(p2, p6, p4, p8)
+ggsave("plots/pers_pos_correlation.png", width = 8, height = 6)
+
+
+plot_grid(p5, p6, nrow = 2)
+ggsave("plots/psqi_duration_correlation.png", width = 4, height = 6)
+```
 
 
 ### correlation stuff PSQI (Sleep Quality) and Reactivity (PERS)
