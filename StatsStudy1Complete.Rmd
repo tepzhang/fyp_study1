@@ -7,6 +7,13 @@ output: html_document
 
 ### library
 
+```{r set theme}
+theme_set(theme_classic()+
+            theme(plot.title = element_text(hjust = .5)))
+# theme_set(theme_grey())
+```
+
+
 ```{r}
 library(tidyverse)
 library(psych)
@@ -43,7 +50,7 @@ df <- df1 %>%
 
 ```{r}
 df <- df %>% 
-  mutate (psqi_sf = case_when(
+  mutate(psqi_sf = case_when(
     df$psqi_sf > 100 ~ 100,
     df$psqi_sf <= 100 ~ df$psqi_sf
     ))
@@ -217,15 +224,20 @@ mean(df$psqi_4, na.rm = FALSE)
 
 ```{r}
 ### PSQI 1 and NEG
-p1 <- ggplot(data = df, mapping = aes(x = 4-psqi_sq_c1, y = pers_neg_total)) +
+p1 <- ggplot(data = df %>% filter(gender %in% c("Male", "Female")), 
+             mapping = aes(x = 4-psqi_sq_c1, y = pers_neg_total)) +
   geom_point(alpha = .5, position = position_jitter(width = .2)) +
   geom_smooth(method = "lm")+
+  # facet_wrap(.~gender)+
   labs(x = "subjective sleep quality",
        y = "PERS negative reactivity",
-       title = "Subjective sleep quality")+
+       title = "Sleep quality")+
   scale_x_continuous(breaks = c(1, 2, 3, 4),
                      labels = c("Very bad", "Fairly bad", "Fairly good", "Very good"))
 # ggsave("plots/pers_neg1.png", width = 4, height = 3)
+
+cor.test(df$psqi_sq_c1[df$gender == "Male"], df$pers_neg_total[df$gender == "Male"])
+cor.test(df$psqi_sq_c1[df$gender == "Female"], df$pers_neg_total[df$gender == "Female"])
 
 
 tmp2 <- lm(df$pers_neg_total ~ df$psqi_sq_c1, data = df)
@@ -252,7 +264,7 @@ p2 <- ggplot(data = df, mapping = aes(x = 4- psqi_sq_c1, y = pers_pos_total)) +
   geom_smooth(method = "lm")+
   labs(x = "subjective sleep quality",
        y = "PERS positive reactivity",
-       title = "Subjective sleep quality")+
+       title = "Sleep quality")+
   scale_x_continuous(labels = c("Very bad", "Fairly bad", "Fairly good", "Very good"))
 
 tmp3 <- lm(df$psqi_sq_c1 ~df$pers_pos_act + df$pers_pos_dur + df$pers_pos_int, data = df)
@@ -335,9 +347,13 @@ summary(tmp4)
 p5 <- ggplot(data = df, mapping = aes(x = psqi_4, y = pers_neg_total)) +
   geom_point(alpha = .5, position = position_jitter(width = .1)) +
   geom_smooth(method = "lm")+
+  # facet_wrap(.~gender)+
   labs(x = "sleep duration (hours)",
        y = "PERS negative reactivity",
        title = "Sleep duration")
+
+cor.test(df$psqi_4[df$gender == "Male"], df$pers_neg_total[df$gender == "Male"])
+cor.test(df$psqi_4[df$gender == "Female"], df$pers_neg_total[df$gender == "Female"])
 
 
 tmp2 <- lm(df$pers_neg_total ~ df$psqi_time)
@@ -482,10 +498,10 @@ mean(df$pers_pos_total, na.rm = FALSE)
 
 
 ```{r correlation plots}
-plot_grid(p1, p5, p3, p7, nrow = 2)
+plot_grid(p5, p1, p7, p3,  nrow = 2)
 ggsave("plots/pers_neg_correlation.png", width = 8, height = 6)
 
-plot_grid(p2, p6, p4, p8)
+plot_grid(p6, p2, p8, p4)
 ggsave("plots/pers_pos_correlation.png", width = 8, height = 6)
 
 
